@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>3D Coin Flip Animation</title>
+    <style>
+        @font-face {
+            font-family: 'Intro';
+            src: url('intro.otf') format('opentype');
+        }
+        body, html {
+            margin: 0;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            background: url('herobg.png') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-family: 'Intro', Arial, sans-serif;
+        }
+        #titles {
+            position: absolute;
+            top: 10%;
+            text-align: center;
+            font-size: 84px; /* Размер текста "Привет, я Никита" увеличен */
+        }
+        #role {
+            color: #D300FF; /* Яркий фиолетовый цвет */
+            font-size: 50px; /* Размер текста для ролей увеличен */
+            height: 120px;
+            overflow: hidden;
+            white-space: nowrap;
+            margin-left: 0; /* Убедитесь, что текст начинается слева */
+        }
+       #container3D {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: flex-end; /* Изменено выравнивание, чтобы поднять модель вверх */
+            justify-content: center;
+        }
+        #buttonContainer {
+            position: absolute;
+            bottom: 15%; /* Настроено положение контейнера с кнопками */
+            display: flex;
+            flex-direction: column; /* Кнопки теперь друг под другом */
+            align-items: center; /* Центрирование кнопок */
+            gap: 20px; /* Расстояние между кнопками */
+        }
+
+        .button {
+            font-family: 'Intro', Arial, sans-serif;
+            padding: 30px 60px; /* Унифицированный размер кнопок */
+            margin: 5px;
+            border-radius: 50px; /* Овальная форма */
+            background-color: #333; /* Темный фон кнопки */
+            color: white;
+            font-size: 34px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(150, 0, 240, 0.75); /* Начальное свечение */
+            position: relative;
+            overflow: hidden;
+            display: flex; /* Гарантирует, что текст центрирован */
+            justify-content: center; /* Горизонтальное центрирование текста */
+            align-items: center; /* Вертикальное центрирование текста */
+            text-decoration: none; /* Убирает подчеркивание ссылки */
+            width: 300px; /* Фиксированная ширина кнопок */
+        }
+
+
+        .button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(150, 0, 240, 0.4), rgba(190, 75, 219, 0.6), rgba(150, 0, 240, 0.4));
+            border-radius: 50px;
+            z-index: -1;
+            filter: blur(8px);
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+    @keyframes glowAnimation {
+        from {
+            box-shadow: 0 0 5px #9b59b6, 0 0 10px #9b59b6, 0 0 15px #9b59b6, 0 0 20px #8e44ad, 0 0 25px #8e44ad, 0 0 30px #8e44ad, 0 0 35px #8e44ad;
+            border-color: #9b59b6;
+        }
+        to {
+            box-shadow: 0 0 10px #9b59b6, 0 0 20px #9b59b6, 0 0 30px #9b59b6, 0 0 40px #8e44ad, 0 0 50px #8e44ad, 0 0 60px #8e44ad, 0 0 70px #8e44ad;
+            border-color: #8e44ad;
+        }
+    }
+
+    </style>
+</head>
+<body>
+    <div id="titles">
+        <div>Привет, я Никита</div>
+        <div id="role"></div>
+    </div>
+    <div id="container3D"></div>
+    <div id="buttonContainer">
+    <a href="https://vk.com/n.lable" class="button">VK</a> <!-- Ссылка на VK -->
+    <a href="https://t.me/coderpythonnick" class="button">TELEGRAM</a> <!-- Ссылка на Telegram -->
+    </div>
+    <script type="module">
+        import * as THREE from "https://cdn.skypack.dev/three@0.129.0/build/three.module.js";
+        import { GLTFLoader } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/loaders/GLTFLoader.js";
+        import { OrbitControls } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/controls/OrbitControls.js";
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById("container3D").appendChild(renderer.domElement);
+
+        scene.add(new THREE.AmbientLight(0xffffff, 1));  // Ambient light for overall lighting
+
+        const addDirectionalLight = (x, y, z, intensity) => {
+            const light = new THREE.DirectionalLight(0xffffff, intensity);
+            light.position.set(x, y, z);
+            scene.add(light);
+        };
+
+        addDirectionalLight(75, 75, 75, 10);  // Adding lights for better visibility
+        addDirectionalLight(-75, 75, 75, 10);
+
+        camera.position.set(0, 10, 100);  // Positioning the camera
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;  // Dynamic damping effect
+
+        const loader = new GLTFLoader();
+        loader.load('scene.gltf', function (gltf) {
+            const coin = gltf.scene;
+            const scaleFactor = 3 * Math.min(window.innerWidth, window.innerHeight) / 1000;
+            coin.scale.set(scaleFactor, scaleFactor, scaleFactor);
+            coin.position.set(0, 10, 0);  // Centering the model
+            scene.add(coin);
+            animate();
+        }, undefined, function (error) {
+            console.error("An error occurred while loading the model", error);
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+            scene.children.forEach(child => {
+                if (child instanceof THREE.Group) {
+                    child.rotation.y += 0.01;  // Rotating the model
+                }
+            });
+            controls.update();  // Updating camera controls
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener("resize", function () {
+            const scaleFactor = 3 * Math.min(window.innerWidth, window.innerHeight) / 1000;
+            scene.children.forEach(child => {
+                if (child instanceof THREE.Group) {
+                    child.scale.set(scaleFactor, scaleFactor, scaleFactor);
+                }
+            });
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Role animation
+        const roles = ["NICKYY LABLE", "Python Разработчик", "Web Разработчик", "Web Дизайнер", "Разработчик ботов"];
+        let currentRole = 0;
+        let roleDiv = document.getElementById('role');
+        let deleting = false;
+        let roleIndex = 0;
+
+        function updateRole() {
+            if (deleting) {
+                if (roleIndex > 0) {
+                    roleIndex--;
+                    roleDiv.textContent = roles[currentRole].substring(0, roleIndex);
+                } else {
+                    deleting = false;
+                    currentRole = (currentRole + 1) % roles.length;
+                }
+            } else {
+                if (roleIndex < roles[currentRole].length) {
+                    roleIndex++;
+                    roleDiv.textContent = roles[currentRole].substring(0, roleIndex);
+                } else {
+                    setTimeout(() => { deleting = true; }, 1000); // Добавил задержку перед удалением
+                }
+            }
+        }
+        setInterval(updateRole, 150);
+    </script>
+</body>
+</html>
