@@ -141,7 +141,7 @@
         const loader = new GLTFLoader();
         loader.load('scene.gltf', function (gltf) {
             const coin = gltf.scene;
-            const scaleFactor = 3 * Math.min(window.innerWidth, window.innerHeight) / 1000;
+            const scaleFactor = 4 * Math.min(window.innerWidth, window.innerHeight) / 1000;
             coin.scale.set(scaleFactor, scaleFactor, scaleFactor);
             coin.position.set(0, 10, 0);  // Centering the model
             scene.add(coin);
@@ -162,7 +162,7 @@
         }
 
         window.addEventListener("resize", function () {
-            const scaleFactor = 3 * Math.min(window.innerWidth, window.innerHeight) / 1000;
+            const scaleFactor = 4 * Math.min(window.innerWidth, window.innerHeight) / 1000;
             scene.children.forEach(child => {
                 if (child instanceof THREE.Group) {
                     child.scale.set(scaleFactor, scaleFactor, scaleFactor);
